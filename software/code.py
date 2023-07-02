@@ -7,8 +7,10 @@ import gc
 import os
 import alarm
 from digitalio import DigitalInOut, Direction, Pull
-# import alarm
 
+# Audio output PIO
+# output each sample as PWM
+# MSB determines which of 2 pins the PWM is routed
 hc_output = """
 .program hc_output
 pull
@@ -39,7 +41,7 @@ pos_skip:
     jmp start
 """
 
-sm = None  
+audio_state_machine = None  
 
 BUFF_SIZE = 16384 * 2
 NUM_CHUNKS = 32
@@ -54,6 +56,7 @@ dbg.direction = Direction.OUTPUT
 
 woken_from_sleep = alarm.wake_alarm is not None
 
+# blink the debug led [err_code] number of times, repeatedly to signal a "crash"
 def die(err_code):
     global dbg
     while True:
@@ -71,6 +74,7 @@ if not sounds_dir in os.listdir():
 
 sounds = []
 for s in os.listdir(sounds_dir):
+    # don't play hidden files - macos likes to add junk files if you drag/drop from finder
     if (s[0] != '.'):
         print(s)
         sounds.append(sounds_dir + "/" + s)
@@ -81,8 +85,13 @@ if sound_count == 0:
     die(3)
 sound_index = 0
 
+# VERY IMPORTANT
+# garbage colletor might run during playback if not disabled and cause gaps
+# since we are tightly managing an fixed-size audio buffer, disable and manage manually
 gc.disable()
 
+# instantiate audio buffer, and create a chunked "view" into it to make writing easier
+# chunks let us do more frequent background writes to PIO
 read_buf = bytearray(BUFF_SIZE)
 mv = memoryview(read_buf)
 chunks = []
@@ -94,11 +103,11 @@ fifo_wrap = array.array('L', b"\x7f\x00\x00\x00")
 debounce_reset = True
 
 def init_sm():
-    global sm
-    if sm:
-        sm.stop()
-        sm.deinit()
-    sm = rp2pio.StateMachine(
+    global audio_state_machine
+    if audio_state_machine:
+        audio_state_machine.stop()
+        audio_state_machine.deinit()
+    audio_state_machine = rp2pio.StateMachine(
         program = adafruit_pioasm.assemble(hc_output),
         frequency = 25100000,
         first_set_pin=board.AUDIO_P,
@@ -106,16 +115,17 @@ def init_sm():
         initial_set_pin_state = 0,
         set_pin_count = 2,
     )   
-    sm.restart()
-    sm.write(fifo_wrap)
+    audio_state_machine.restart()
+    audio_state_machine.write(fifo_wrap)
 
+# poll if user is pressing the button to stop the audio
 def check_for_stop():
     global debounce_reset
     if not debounce_reset and btn.value:
         debounce_reset = True
     if (not btn.value and debounce_reset):
         print("stopping..")
-        sm.stop()
+        audio_state_machine.stop()
         while not btn.value:
             time.sleep(0.05)
             pass
@@ -137,6 +147,9 @@ while True:
     print(f'loading {sound}')
     debug_blink(1 if woken_from_sleep else 2)
     with open(sound,'rb') as fp:
+        # once sound is ready, wait for user to hit play button
+        # if `woken_from_sleep`, we know that they have already pressed it
+        # if they dont press by `SLEEP_THRESHOLD`, go to sleep
         while btn.value and not woken_from_sleep:
             sleep_counter += 1
             if sleep_counter >= SLEEP_THRESHOLD:
@@ -152,9 +165,8 @@ while True:
         debounce_reset = False
         print("playing")
         ## multiple blank writes to ensure followups are properly queued.
-        sm.background_write(read_buf)
-        sm.background_write(read_buf)
-        sm.background_write(read_buf)
+        for _ in range(3):
+            audio_state_machine.background_write(read_buf)
         while True:
             should_break = False
             for c in chunks:
@@ -165,5 +177,5 @@ while True:
                 time.sleep(0.04)
             if (should_break):
                 break
-            sm.background_write(read_buf)
+            audio_state_machine.background_write(read_buf)
         gc.collect()
