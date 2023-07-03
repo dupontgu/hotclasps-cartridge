@@ -1,0 +1,23 @@
+G04 #@! TF.GenerationSoftware,KiCad,Pcbnew,(6.0.6-0)*
+G04 #@! TF.CreationDate,2022-07-24T09:40:11-04:00*
+G04 #@! TF.ProjectId,hitclips_2040_adapter_v5,68697463-6c69-4707-935f-323034305f61,rev?*
+G04 #@! TF.SameCoordinates,Original*
+G04 #@! TF.FileFunction,Paste,Bot*
+G04 #@! TF.FilePolarity,Positive*
+%FSLAX46Y46*%
+G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*
+G04 Created by KiCad (PCBNEW (6.0.6-0)) date 2022-07-24 09:40:11*
+%MOMM*%
+%LPD*%
+G01*
+G04 APERTURE LIST*
+%ADD10R,1.800000X2.750000*%
+G04 APERTURE END LIST*
+D10*
+X131875600Y-87158200D03*
+X134415600Y-87158200D03*
+X136955600Y-87158200D03*
+X139495600Y-87158200D03*
+X142035600Y-87158200D03*
+X144575600Y-87158200D03*
+M02*
