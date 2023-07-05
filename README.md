@@ -12,4 +12,4 @@ This is a complete rebuild of my [Homebrew HitClips](https://hackaday.io/project
 
 ### Notes
 * The hardware is built around the Raspberry Pi RP2040 microcontroller.
-* The firmware is written in [CircuitPython](https://circuitpython.org/), and features and audio driver written in [pioasm](https://rp2040pio-docs.readthedocs.io/en/latest/pio-programs.html).
+* The firmware is written in [CircuitPython](https://circuitpython.org/), and features an audio driver written in [pioasm](https://rp2040pio-docs.readthedocs.io/en/latest/pio-programs.html).
