@@ -1,6 +1,8 @@
 # HotClasps (HitClips compatible audio cartridge)
 This repository contains the hardware, software, and enclosure CAD for the HotClaps cartridge (and accomanying debugger). It will play any audio through Tiger Electronics' [HitClips](https://en.wikipedia.org/wiki/HitClips) players.
 
+<img src="hotclasps_header_image.jpg" width="600">
+
 ### Context 
 This is a complete rebuild of my [Homebrew HitClips](https://hackaday.io/project/183495-homebrew-hitclips) project from 2022.
 
