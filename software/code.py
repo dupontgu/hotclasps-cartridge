@@ -111,8 +111,9 @@ def init_sm():
         program = adafruit_pioasm.assemble(hc_output),
         frequency = 25100000,
         first_set_pin=board.AUDIO_P,
+        initial_out_pin_direction=0b11,
         out_shift_right=False,
-        initial_set_pin_state = 0,
+        initial_set_pin_state = 0b0000,
         set_pin_count = 2,
     )   
     audio_state_machine.restart()
@@ -140,7 +141,6 @@ def debug_blink(times):
         time.sleep(0.10)
 
 while True:
-    init_sm()
     sleep_counter = 0
     sound = sounds[sound_index]
     sound_index = (sound_index + 1) % sound_count
@@ -161,6 +161,7 @@ while True:
                 alarm.exit_and_deep_sleep_until_alarms(btn_pin)
             time.sleep(0.01)
             pass
+        init_sm()
         woken_from_sleep = False
         debounce_reset = False
         print("playing")
