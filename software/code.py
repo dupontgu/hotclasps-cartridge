@@ -174,6 +174,7 @@ while True:
                 data = fp.readinto(c, chunk_size)
                 if (not data or check_for_stop()):
                     should_break = True
+                    audio_state_machine.restart()
                     break
                 time.sleep(0.04)
             if (should_break):
